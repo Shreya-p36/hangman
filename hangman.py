@@ -1,56 +1,59 @@
 import random
 from words import words
 
-
-def get_valid_word(words):
-    word=random.choice(words)
+def get_valid_word(word_list):
+    word = random.choice(word_list)
     while '-' in word or ' ' in word:
-        word=random.choice(words);
-        
+        word = random.choice(word_list)
     return word.upper()
+
+def reveal_hints(word, num_hints):
+    hint_indices = random.sample(range(len(word)), num_hints)
+    return set(word[i] for i in hint_indices)
+
 def hangman():
-    num_hints=2
-    word=get_valid_word(words)
-    display=reveal_hints(word,num_hints)
-    word_letters=set(word)
-    alphabet=set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    used_letters=set(); #what user guessed
-     
-    lives=6
-    #getting user input 
-    while len(word_letters)>0 and lives>0:
-        #letters used: 
-        print('you have used these letters: ',''.join(used_letters))
-    
-        word_list=[letter if letter in used_letters else '-' for letter in word ]
-        print('current word',''.join(word_list))
-        
-        user_letter =input("guess a letter: ").upper()
-        if user_letter in alphabet-used_letters: 
-            used_letters.add(user_letter)
-            if user_letter in word_letters:
-                word_letters.remove(user_letter)
-            else:
-                lives =lives-1
-                print('letter is not in a word.')
-                print(f"You have {lives} lives remaining.")
-        elif user_letter in used_letters:
-            print("you have already guessed this letter, try another one")
-        
+    lives = 6
+    num_hints = 2
+
+    word = get_valid_word(words)
+    hint_letters = reveal_hints(word, num_hints)
+
+    used_letters = set(hint_letters)
+    word_letters = set(word) - used_letters
+    alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
+    print("🎩 Welcome to Hangman!")
+    print("Hint letters:", " ".join(hint_letters))
+
+    while len(word_letters) > 0 and lives > 0:
+        print("\nUsed letters:", " ".join(sorted(used_letters)))
+        display = [letter if letter in used_letters else '-' for letter in word]
+        print("Current word:", " ".join(display))
+        print(f"Lives left: {lives}")
+
+        user_letter = input("Guess a letter: ").upper()
+
+        if len(user_letter) != 1 or not user_letter.isalpha():
+            print("❌ Please enter a single alphabet letter.")
+            continue
+
+        if user_letter in used_letters:
+            print("⚠ You already guessed that letter.")
+            continue
+
+        used_letters.add(user_letter)
+
+        if user_letter in word_letters:
+            word_letters.remove(user_letter)
+            print("✅ Correct!")
         else:
-            print("invalid character,try again");   
-    #gets here when the leb(word_letters)==0 or when lives==0 
+            lives -= 1
+            print("❌ Wrong guess!")
+
     if lives == 0:
-        print("you died ,sorry,the word was ",word)
+        print(f"\n💀 You lost! The word was: {word}")
     else:
-        print('you have guessed the word: ',word,'!!!!')
-    
+        print(f"\n🎉 You won! The word was: {word}")
 
-def reveal_hints(words, num_hints):
-    revealed = ['_' for _ in words]
-    hint_indices = random.sample(range(len(words)), num_hints)
-    for index in hint_indices:
-        revealed[index] = words[index]
-    return revealed
-
-hangman()
+if __name__ == "__main__":
+    hangman()
